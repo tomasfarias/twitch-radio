@@ -1,3 +1,16 @@
+[tool.poetry]
+name = "streamlink-bot"
+version = "0.1.0"
+description = ""
+authors = ["Tomás Farías <tomas@tomasfarias.dev>"]
+
+[tool.poetry.dependencies]
+python = "^3.6"
+"discord.py" = "^1.4.1"
+
+[tool.poetry.dev-dependencies]
+pytest = "^3.6"
+
 [tool.black]
 line-length = 110
 target-version = ['py38']
