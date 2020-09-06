@@ -14,8 +14,8 @@ def parse_cli_args(args: typing.Sequence):
     parser = argparse.ArgumentParser(description="Listen to Twitch audio in Discord")
     parser.add_argument(
         "token",
-        help="Twitch bot token, can be read from TWITCH_TOKEN env",
-        env_var="TWITCH_TOKEN",
+        help="Discord bot token, can be set via DISCORD_BOT_TOKEN environment variable",
+        env_var="DISCORD_BOT_TOKEN",
         action=EnvDefault,
     )
     parser.add_argument("--debug", help="enable debug logging", default=False, action="store_true")
