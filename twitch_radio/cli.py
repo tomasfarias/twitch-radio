@@ -2,20 +2,20 @@ import argparse
 import typing
 import os
 
-from .bot import client
+from .bot import bot
 
 
 def run(args):
     parsed = parse_cli_args(args)
-    client.run(parsed.token)
+    bot.run(parsed.token)
 
 
 def parse_cli_args(args: typing.Sequence):
-    parser = argparse.ArgumentParser(description="Stream Twitch audio into Discord")
+    parser = argparse.ArgumentParser(description="Listen to Twitch audio in Discord")
     parser.add_argument(
         "token",
         help="Twitch bot token, can be read from TWITCH_TOKEN env",
-        envvar="TWITCH_TOKEN",
+        env_var="TWITCH_TOKEN",
         action=EnvDefault,
     )
     parser.add_argument("--debug", help="enable debug logging", default=False, action="store_true")
@@ -25,9 +25,10 @@ def parse_cli_args(args: typing.Sequence):
 
 
 class EnvDefault(argparse.Action):
-    def __init__(self, envvar, required=True, default=None, **kwargs):
-        if default is None and envvar is not None:
-            default = os.getenv(envvar)
+    def __init__(self, env_var, required=True, default=None, **kwargs):
+        if default is None and env_var is not None:
+            default = os.getenv(env_var)
+
         if required is True and default is not None:
             required = False
         super(EnvDefault, self).__init__(default=default, required=required, **kwargs)
