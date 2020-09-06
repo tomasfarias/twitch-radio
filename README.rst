@@ -10,12 +10,10 @@ Requires `ffmpeg <https://ffmpeg.org>`_.
 Usage
 #####
 Simply call the bot with your Discord token:
-
 ::
    twitch-radio TOKEN
 
 Alternatively, the token can be read from the environment using ``DISCORD_BOT_TOKEN``:
-
 ::
    DISCORD_BOT_TOKEN=TOKEN twitch-radio
 
