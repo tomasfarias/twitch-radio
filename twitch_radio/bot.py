@@ -1,6 +1,6 @@
 import asyncio
-import logging
 from pathlib import Path
+import logging
 
 import discord
 from streamlink import Streamlink
@@ -11,10 +11,12 @@ from discord.ext import commands
 ffmpeg_options = {"options": "-vn"}
 
 session = Streamlink()
+session.set_option("hls-segment-threads", 3)
+session.set_option("hls-segment-stream-data", True)
 
 
 class StreamlinkSource(discord.PCMVolumeTransformer):
-    def __init__(self, source, *, url, volume=0.5):
+    def __init__(self, source, *, url, channel, volume=0.5):
         super().__init__(source, volume)
 
         self.url = url
@@ -25,7 +27,7 @@ class StreamlinkSource(discord.PCMVolumeTransformer):
         loop = loop or asyncio.get_event_loop()
         stream = await loop.run_in_executor(None, lambda: session.streams(url)["audio_only"])
 
-        return cls(discord.FFmpegPCMAudio(stream.url, **ffmpeg_options), stream=stream)
+        return cls(discord.FFmpegPCMAudio(stream.url, **ffmpeg_options), url=url)
 
 
 class Stream(commands.Cog):
@@ -35,7 +37,6 @@ class Stream(commands.Cog):
     @commands.command()
     async def join(self, ctx, *, channel: discord.VoiceChannel):
         """Joins a voice channel"""
-
         if ctx.voice_client is not None:
             return await ctx.voice_client.move_to(channel)
 
@@ -54,7 +55,6 @@ class Stream(commands.Cog):
     @commands.command()
     async def volume(self, ctx, volume: int):
         """Changes the player's volume"""
-
         if ctx.voice_client is None:
             return await ctx.send("Not connected to a voice channel.")
 
@@ -64,7 +64,6 @@ class Stream(commands.Cog):
     @commands.command()
     async def stop(self, ctx):
         """Stops and disconnects the bot from voice"""
-
         await ctx.voice_client.disconnect()
 
     @stream.before_invoke
