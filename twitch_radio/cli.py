@@ -1,5 +1,6 @@
 import argparse
 import typing
+import logging
 import os
 
 from .bot import bot
@@ -7,6 +8,7 @@ from .bot import bot
 
 def run(args):
     parsed = parse_cli_args(args)
+    logging.basicConfig(level=logging.DEBUG if parsed.debug is True else logging.INFO)
     bot.run(parsed.token)
 
 
