@@ -28,8 +28,8 @@ deploy:
   provider: script
   script:
     docker build -t tomasfarias/twitch-radio:latest .;
-    docker tag tomasfarias/twitch-radio:latest registry.heroku.com/twitch-radio/web;
+    docker tag tomasfarias/twitch-radio:latest registry.heroku.com/twitch-radio/worker;
     docker push tomasfarias/twitch-radio;
-    docker push registry.heroku.com/twitch-radio/web
+    docker push registry.heroku.com/twitch-radio/worker
   on:
     branch: master
