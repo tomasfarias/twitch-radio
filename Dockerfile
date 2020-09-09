@@ -8,4 +8,4 @@ COPY . .
 RUN poetry config virtualenvs.create false \
  && poetry install --no-dev --no-interaction
 
-CMD ["twitch-radio --debug"]
+CMD ["twitch-radio", "--debug"]
