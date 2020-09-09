@@ -30,7 +30,6 @@ deploy:
     docker build -t tomasfarias/twitch-radio:latest .;
     docker tag tomasfarias/twitch-radio:latest registry.heroku.com/twitch-radio/web;
     docker push tomasfarias/twitch-radio;
-    docker push registry.heroku.com/twitch-radio/web;
-    heroku container:release web --app twitch-radio
+    docker push registry.heroku.com/twitch-radio/web
   on:
     branch: master
