@@ -5,6 +5,10 @@ WORKDIR /usr/src/twitch-radio
 RUN pip install poetry
 COPY . .
 
+RUN apt-get -y update \
+ && apt-get -y upgrade \
+ && apt-get install -y ffmpeg
+
 RUN poetry config virtualenvs.create false \
  && poetry install --no-dev --no-interaction
 
