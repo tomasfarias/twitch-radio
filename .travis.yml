@@ -10,9 +10,6 @@ python:
 
 before_install:
   - pip install poetry
-  - wget -qO- https://toolbelt.heroku.com/install.sh | sh
-  - echo "$DOCKER_TOKEN" | docker login -u "$DOCKER_USERNAME" --password-stdin
-  - echo "$HEROKU_TOKEN" | docker login -u "$HEROKU_USERNAME" --password-stdin registry.heroku.com
 
 install:
   - poetry install
@@ -22,13 +19,18 @@ script:
   - poetry run mypy twitch_radio tests
   - poetry run pytest tests
 
+before_deploy:
+  - wget -qO- https://toolbelt.heroku.com/install.sh | sh
+  - echo "$DOCKER_TOKEN" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  - echo "$HEROKU_TOKEN" | docker login -u "$HEROKU_USERNAME" --password-stdin registry.heroku.com
+
 deploy:
   provider: script
   script:
-    docker build -t tomasfarias/twitch-radio .;
-    docker tag tomasfarias/twitch-radio registry.heroku.com/$HEROKU_APP_NAME/web;
+    docker build -t tomasfarias/twitch-radio:latest .;
+    docker tag tomasfarias/twitch-radio:latest registry.heroku.com/twitch-radio/web;
     docker push tomasfarias/twitch-radio;
-    docker push registry.heroku.com/$HEROKU_APP_NAME/twitch-radio;
-    heroku container:release web --app $HEROKU_APP_NAME
+    docker push registry.heroku.com/twitch-radio/web;
+    heroku container:release web --app twitch-radio
   on:
     branch: master
