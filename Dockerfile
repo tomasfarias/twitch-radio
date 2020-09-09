@@ -5,6 +5,7 @@ WORKDIR /usr/src/twitch-radio
 RUN pip install poetry
 COPY . .
 
-RUN poetry install --no-dev
+RUN poetry config virtualenvs.create false \
+ && poetry install --no-dev --no-interaction
 
 CMD ["twitch-radio"]
