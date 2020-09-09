@@ -16,7 +16,7 @@ session.set_option("hls-segment-stream-data", True)
 
 
 class StreamlinkSource(discord.PCMVolumeTransformer):
-    def __init__(self, source, *, url, channel, volume=0.5):
+    def __init__(self, source, *, url, volume=0.5):
         super().__init__(source, volume)
 
         self.url = url
