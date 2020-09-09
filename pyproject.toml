@@ -18,6 +18,8 @@ PyNaCl = "^1.4.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^3.6"
+flake8 = "^3.8.3"
+mypy = "^0.782"
 
 [tool.black]
 line-length = 110
