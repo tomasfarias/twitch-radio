@@ -1,17 +1,36 @@
+sudo: required
+
+services:
+  - docker
+
 language: python
+
 python:
-- '3.6'
-- '3.7'
-- '3.8'
+  - '3.6'
+  - '3.7'
+  - '3.8'
+
 before_install:
-- pip install poetry
+  - pip install poetry
+  - wget -qO- https://toolbelt.heroku.com/install.sh | sh
+  - echo "$DOCKER_TOKEN" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  - echo "$HEROKU_TOKEN" | docker login -u "$HEROKU_USERNAME" --password-stdin registry.heroku.com
+
 install:
-- poetry install
+  - poetry install
+
 script:
-- poetry run flake8 twitch_radio tests
-- poetry run mypy twitch_radio tests
-- poetry run pytest tests
+  - poetry run flake8 twitch_radio tests
+  - poetry run mypy twitch_radio tests
+  - poetry run pytest tests
+  - docker build -t tomasfarias/twitch-radio .
+  - docker tag tomasfarias/twitch-radio registry.heroku.com/$HEROKU_APP_NAME/twitch-radio
+
 deploy:
-  provider: heroku
-  api_key:
-    secure: AzAYcmeO2Mz0oy/IZshGyxaErC+SGx9Umjj4c8zwTj8sllWO114jgmPrmI+aQH/ed8wwYOQYX0OmrbO4MjD9M46wWqST3cqB2fUsY+8y5vmCtjS1c4UFCIQCekRPMII9jaLCYT3w1BHTKsKX8gl+bNAXP7g3ZhU8FjNNVovDwcJ3RbxkZExnI9SOU4N5hb/wR0/S0yhcQQAMWtWrY7AiUshltgk5RczoXBE1DFFjoYbrTRyID+iF5TR1/gqcjmldEe4WHwztiRkdyGCbW4gpe375SAzIsuKpmiSdXTeIZm2k02SN/lQhbuNjs+ZtD6UydD6oP8V4vcqwsTlUT97SHb9dJm8VJeEwUyo4Ew2e5IDJoVfeFZVOb7l9V91VSaaFDRTZiKqCXQm0PBMu+zvm/zmdHwdtK34DnqkF3IxPjn1iemEeHd4q0YER9SAUZh7WI+uVPEQlJE9AFC0nldubCTl8uD5/+O3hShkMbvxWc5SecPCbbH4lhb1/TnWmeaV1mGEpTgr6yY0UTii1buRycWSPqedhlS9y7/4EoYSwZDRXoShQBKB/ToN1xS2Nrn4JUvXPeClJGI+LgdGpkpPBdw2aXsbngjTDGy91AmvpE2CFVhUy+loMk1L10EWGSD0VuyP91opLuMZ/DI3VWFpM/UN/wl60TRwI2/An/DNAVPE=
+  provider: script
+  script:
+    - docker push tomasfarias/twitch-radio
+    - docker push registry.heroku.com/$HEROKU_APP_NAME/twitch-radio
+    - heroku container:release twitch-radio --app $HEROKU_APP_NAME
+  on:
+    branch: master
