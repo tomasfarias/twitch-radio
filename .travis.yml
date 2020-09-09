@@ -6,8 +6,6 @@ services:
 language: python
 
 python:
-  - '3.6'
-  - '3.7'
   - '3.8'
 
 before_install:
@@ -29,8 +27,8 @@ script:
 deploy:
   provider: script
   script:
-    - docker push tomasfarias/twitch-radio
-    - docker push registry.heroku.com/$HEROKU_APP_NAME/twitch-radio
-    - heroku container:release twitch-radio --app $HEROKU_APP_NAME
+    docker push tomasfarias/twitch-radio;
+    docker push registry.heroku.com/$HEROKU_APP_NAME/twitch-radio;
+    heroku container:release twitch-radio --app $HEROKU_APP_NAME
   on:
     branch: master
