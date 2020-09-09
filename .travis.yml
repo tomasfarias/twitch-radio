@@ -21,12 +21,12 @@ script:
   - poetry run flake8 twitch_radio tests
   - poetry run mypy twitch_radio tests
   - poetry run pytest tests
-  - docker build -t tomasfarias/twitch-radio .
-  - docker tag tomasfarias/twitch-radio registry.heroku.com/$HEROKU_APP_NAME/web
 
 deploy:
   provider: script
   script:
+    docker build -t tomasfarias/twitch-radio .;
+    docker tag tomasfarias/twitch-radio registry.heroku.com/$HEROKU_APP_NAME/web;
     docker push tomasfarias/twitch-radio;
     docker push registry.heroku.com/$HEROKU_APP_NAME/twitch-radio;
     heroku container:release web --app $HEROKU_APP_NAME
