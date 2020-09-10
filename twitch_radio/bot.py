@@ -78,7 +78,9 @@ class Stream(commands.Cog):
             ctx.voice_client.stop()
 
 
-bot = commands.Bot(command_prefix=commands.when_mentioned_or("!"), description="Simple Twitch audio streamer")
+bot = commands.Bot(
+    command_prefix=commands.when_mentioned_or("!tr"), description="Simple Twitch audio streamer"
+)
 
 
 @bot.event
