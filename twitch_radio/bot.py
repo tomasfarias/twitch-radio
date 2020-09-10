@@ -79,7 +79,7 @@ class Stream(commands.Cog):
 
 
 bot = commands.Bot(
-    command_prefix=commands.when_mentioned_or("!tr"), description="Simple Twitch audio streamer"
+    command_prefix=commands.when_mentioned_or("!tr "), description="Simple Twitch audio streamer"
 )
 
 
