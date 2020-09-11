@@ -50,6 +50,12 @@ class Stream(commands.Cog):
             player = await StreamlinkSource.from_url(url, loop=self.bot.loop)
             ctx.voice_client.play(player, after=lambda e: print("Player error: %s" % e) if e else None)
 
+        await self.bot.change_presence(
+            discord.Activity(
+                name=f"Listening to {channel}",
+                type=discord.ActivityType.listening,
+            )
+        )
         await ctx.send("Now listening to: {}".format(player.channel))
 
     @commands.command()
@@ -65,6 +71,9 @@ class Stream(commands.Cog):
     async def stop(self, ctx):
         """Stops and disconnects the bot from voice"""
         await ctx.voice_client.disconnect()
+        await self.bot.change_presence(
+            discord.Activity(name="Listening to !tr help", type=discord.ActivityType.listening)
+        )
 
     @stream.before_invoke
     async def ensure_voice(self, ctx):
@@ -79,13 +88,18 @@ class Stream(commands.Cog):
 
 
 bot = commands.Bot(
-    command_prefix=commands.when_mentioned_or("!tr "), description="Simple Twitch audio streamer"
+    command_prefix=commands.when_mentioned_or("!tr "),
+    description="Simple Twitch audio streamer",
+    help=commands.DefaultHelpCommand(),
 )
 
 
 @bot.event
 async def on_ready():
     logging.info("Connected as %s", bot.user)
+    await bot.change_presence(
+        discord.Activity(name="Listening to !tr help", type=discord.ActivityType.listening)
+    )
 
 
 bot.add_cog(Stream(bot))
