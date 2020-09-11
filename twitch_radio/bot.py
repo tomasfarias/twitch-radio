@@ -51,7 +51,7 @@ class Stream(commands.Cog):
             ctx.voice_client.play(player, after=lambda e: print("Player error: %s" % e) if e else None)
 
         await self.bot.change_presence(
-            discord.Activity(
+            activity=discord.Activity(
                 name=f"Listening to {channel}",
                 type=discord.ActivityType.listening,
             )
@@ -72,7 +72,7 @@ class Stream(commands.Cog):
         """Stops and disconnects the bot from voice"""
         await ctx.voice_client.disconnect()
         await self.bot.change_presence(
-            discord.Activity(name="Listening to !tr help", type=discord.ActivityType.listening)
+            activity=discord.Activity(name="Listening to !tr help", type=discord.ActivityType.listening)
         )
 
     @stream.before_invoke
@@ -98,7 +98,7 @@ bot = commands.Bot(
 async def on_ready():
     logging.info("Connected as %s", bot.user)
     await bot.change_presence(
-        discord.Activity(name="Listening to !tr help", type=discord.ActivityType.listening)
+        activity=discord.Activity(name="Listening to !tr help", type=discord.ActivityType.listening)
     )
 
 
