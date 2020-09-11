@@ -88,9 +88,21 @@ bot = commands.Bot(
 @bot.event
 async def on_ready():
     logging.info("Connected as %s", bot.user)
-    await bot.change_presence(
-        activity=discord.Activity(name="Listening to !tr help", type=discord.ActivityType.listening)
-    )
+    await bot.change_presence(activity=discord.Activity(name="!tr help", type=discord.ActivityType.listening))
+
+
+@bot.event
+async def on_voice_state_update(member, before, after):
+    if before.channel is None or after.channel == before.channel:
+        return
+
+    voice_client = discord.utils.get(bot.voice_clients, guild=member.guild)
+    if voice_client is None or not voice_client.is_connected():
+        return
+
+    members = before.channel.members
+    if len(members) == 1 and bot.user in members:
+        await voice_client.disconnect()
 
 
 bot.add_cog(Stream(bot))
