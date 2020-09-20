@@ -35,7 +35,7 @@ class StreamlinkSource(discord.PCMVolumeTransformer):
     async def get_status(self, loop=None):
         loop = loop or asyncio.get_event_loop()
         plugin = self.stream.session.resolve_url(self.url)
-        status = await loop.run_in_executor(None, lambda: plugin.api.streams(self.url))
+        status = await loop.run_in_executor(None, lambda: plugin.api.streams(plugin._channel_id))
         return status
 
 
@@ -54,7 +54,7 @@ class Stream(commands.Cog):
     @commands.command()
     async def status(self, ctx, *, channel):
         """Reports Twitch channel status"""
-        url = "twitch.tv/" + channel
+        url = "twitch.tv/" + channel.strip()
 
         async with ctx.typing():
             try:
@@ -94,7 +94,7 @@ class Stream(commands.Cog):
     @commands.command()
     async def stream(self, ctx, *, channel):
         """Streams audio from a Twitch channel"""
-        url = "twitch.tv/" + channel
+        url = "twitch.tv/" + channel.strip()
 
         async with ctx.typing():
             try:
