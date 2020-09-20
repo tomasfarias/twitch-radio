@@ -1,9 +1,11 @@
 import asyncio
 from pathlib import Path
 import logging
+import functools
 
 import discord
 from streamlink import Streamlink
+from streamlink import PluginError
 
 from discord.ext import commands
 
@@ -23,7 +25,7 @@ class StreamlinkSource(discord.PCMVolumeTransformer):
         self.channel = Path(url).name
 
     @classmethod
-    async def from_url(cls, url, *, loop=None):
+    async def from_url(cls, url, loop=None):
         loop = loop or asyncio.get_event_loop()
         stream = await loop.run_in_executor(None, lambda: session.streams(url)["audio_only"])
 
@@ -43,14 +45,55 @@ class Stream(commands.Cog):
         await channel.connect()
 
     @commands.command()
+    async def status(self, ctx, *, channel):
+        """Reports Twitch channel status"""
+        url = "twitch.tv/" + channel
+        streams = session.streams(url)
+
+        async with ctx.typing():
+            if not streams:
+                embed = discord.Embed(title="{} is OFFLINE".format(channel))
+                await ctx.send(embed=embed)
+            else:
+                plugin = streams.popitem()[1].resolve_url(url)
+
+                try:
+                    stream = await self.bot.loop.run_in_executor(
+                        None, lambda: plugin.api.streams(plugin._channel_id)
+                    )
+
+                except Exception:
+                    logging.exception("Plugin or TwitchApi error when checking %s", url)
+                    embed = discord.Embed(title="Error: failed to retrieve channel status")
+                    await ctx.send(embed=embed)
+
+                else:
+                    embed = discord.Embed(
+                        title="{} is LIVE".format(channel), description=stream["stream"]["channel"]["status"]
+                    )
+                    embed.add_field(name="Playing", value=stream["stream"]["game"])
+                    await ctx.send(embed=embed)
+
+    @commands.command()
     async def stream(self, ctx, *, channel):
         """Streams audio from a Twitch channel"""
         url = "twitch.tv/" + channel
-        async with ctx.typing():
-            player = await StreamlinkSource.from_url(url, loop=self.bot.loop)
-            ctx.voice_client.play(player, after=lambda e: print("Player error: %s" % e) if e else None)
 
-        await ctx.send("Now listening to: {}".format(player.channel))
+        async with ctx.typing():
+            try:
+                player = await StreamlinkSource.from_url(url, loop=self.bot.loop)
+
+            except (PluginError, KeyError):
+                logging.exception("Fail to initialize StreamlinkSource from %s", url)
+                embed = discord.Embed(title="Error: channel does not exist", description=channel)
+                await ctx.send(embed=embed)
+
+            else:
+                ctx.voice_client.play(
+                    player, after=lambda e: logging.error("Player error: %s" % e) if e else None
+                )
+                embed = discord.Embed(title="Now listening", description=channel)
+                await ctx.send(embed=embed)
 
     @commands.command()
     async def volume(self, ctx, volume: int):
@@ -72,7 +115,8 @@ class Stream(commands.Cog):
             if ctx.author.voice:
                 await ctx.author.voice.channel.connect()
             else:
-                await ctx.send("You are not connected to a voice channel.")
+                embed = discord.Embed("Error: you are not connected to a voice channel")
+                await ctx.send(embed=embed)
                 raise commands.CommandError("Author not connected to a voice channel.")
         elif ctx.voice_client.is_playing():
             ctx.voice_client.stop()
