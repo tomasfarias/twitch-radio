@@ -102,10 +102,12 @@ class Stream(commands.Cog):
 
             except PluginError:
                 embed = discord.Embed(title="Error: channel does not exist", description=channel)
+                await ctx.voice_client.disconnect()
                 await ctx.send(embed=embed)
 
             except KeyError:
                 embed = discord.Embed(title="{} is OFFLINE".format(channel))
+                await ctx.voice_client.disconnect()
                 await ctx.send(embed=embed)
 
             else:
