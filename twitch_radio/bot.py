@@ -48,31 +48,40 @@ class Stream(commands.Cog):
     async def status(self, ctx, *, channel):
         """Reports Twitch channel status"""
         url = "twitch.tv/" + channel
-        streams = session.streams(url)
 
         async with ctx.typing():
-            if not streams:
+            try:
+                plugin = session.streams(url).popitem()[1].session.resolve_url(url)
+
+            except PluginError:
+                # PluginError raised by plugin when Twitch Api timesout, means it is a non-existing channel
+                embed = discord.Embed(title="Error: channel does not exist", description=channel)
+                await ctx.send(embed=embed)
+                return
+
+            except KeyError:
+                # KeyError raised by trying to index empty streams dictionary, means channel is offline
+                # and not hosting anyone
                 embed = discord.Embed(title="{} is OFFLINE".format(channel))
                 await ctx.send(embed=embed)
+                return
+
+            try:
+                stream = await self.bot.loop.run_in_executor(
+                    None, lambda: plugin.api.streams(plugin._channel_id)
+                )
+
+            except Exception:
+                logging.exception("Plugin or TwitchApi error when checking %s", url)
+                embed = discord.Embed(title="Error: failed to retrieve channel status")
+                await ctx.send(embed=embed)
+
             else:
-                plugin = streams.popitem()[1].session.resolve_url(url)
-
-                try:
-                    stream = await self.bot.loop.run_in_executor(
-                        None, lambda: plugin.api.streams(plugin._channel_id)
-                    )
-
-                except Exception:
-                    logging.exception("Plugin or TwitchApi error when checking %s", url)
-                    embed = discord.Embed(title="Error: failed to retrieve channel status")
-                    await ctx.send(embed=embed)
-
-                else:
-                    embed = discord.Embed(
-                        title="{} is LIVE".format(channel), description=stream["stream"]["channel"]["status"]
-                    )
-                    embed.add_field(name="Playing", value=stream["stream"]["game"])
-                    await ctx.send(embed=embed)
+                embed = discord.Embed(
+                    title="{} is LIVE".format(channel), description=stream["stream"]["channel"]["status"]
+                )
+                embed.add_field(name="Playing", value=stream["stream"]["game"])
+                await ctx.send(embed=embed)
 
     @commands.command()
     async def stream(self, ctx, *, channel):
