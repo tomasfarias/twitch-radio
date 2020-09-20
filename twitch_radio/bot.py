@@ -55,7 +55,7 @@ class Stream(commands.Cog):
                 embed = discord.Embed(title="{} is OFFLINE".format(channel))
                 await ctx.send(embed=embed)
             else:
-                plugin = streams.popitem()[1].resolve_url(url)
+                plugin = streams.popitem()[1].session.resolve_url(url)
 
                 try:
                     stream = await self.bot.loop.run_in_executor(
