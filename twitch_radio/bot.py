@@ -100,13 +100,16 @@ class Stream(commands.Cog):
             try:
                 player = await StreamlinkSource.from_url(url, loop=self.bot.loop)
 
-            except (PluginError, KeyError):
-                logging.exception("Fail to initialize StreamlinkSource from %s", url)
+            except PluginError:
                 embed = discord.Embed(title="Error: channel does not exist", description=channel)
                 await ctx.send(embed=embed)
 
+            except KeyError:
+                embed = discord.Embed(title="{} is OFFLINE".format(channel))
+                await ctx.send(embed=embed)
+
             else:
-                status = player.get_status()
+                status = await player.get_status(loop=self.bot.loop)
                 ctx.voice_client.play(
                     player, after=lambda e: logging.error("Player error: %s" % e) if e else None
                 )
