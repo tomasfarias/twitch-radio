@@ -18,10 +18,11 @@ session.set_option("hls-segment-stream-data", True)
 
 
 class StreamlinkSource(discord.PCMVolumeTransformer):
-    def __init__(self, source, *, url, volume=0.5):
+    def __init__(self, source, *, stream, url, volume=0.5):
         super().__init__(source, volume)
 
         self.url = url
+        self.stream = stream
         self.channel = Path(url).name
 
     @classmethod
@@ -29,7 +30,13 @@ class StreamlinkSource(discord.PCMVolumeTransformer):
         loop = loop or asyncio.get_event_loop()
         stream = await loop.run_in_executor(None, lambda: session.streams(url)["audio_only"])
 
-        return cls(discord.FFmpegPCMAudio(stream.url, **ffmpeg_options), url=url)
+        return cls(discord.FFmpegPCMAudio(stream.url, **ffmpeg_options), stream=stream, url=url)
+
+    async def get_status(self, loop=None):
+        loop = loop or asyncio.get_event_loop()
+        plugin = self.stream.session.resolve_url(self.url)
+        status = await loop.run_in_executor(None, lambda: plugin.api.streams(self.url))
+        return status
 
 
 class Stream(commands.Cog):
@@ -67,7 +74,7 @@ class Stream(commands.Cog):
                 return
 
             try:
-                stream = await self.bot.loop.run_in_executor(
+                status = await self.bot.loop.run_in_executor(
                     None, lambda: plugin.api.streams(plugin._channel_id)
                 )
 
@@ -78,9 +85,10 @@ class Stream(commands.Cog):
 
             else:
                 embed = discord.Embed(
-                    title="{} is LIVE".format(channel), description=stream["stream"]["channel"]["status"]
+                    title="{} is LIVE".format(channel), description=status["stream"]["channel"]["status"]
                 )
-                embed.add_field(name="Playing", value=stream["stream"]["game"])
+                embed.add_field(name="Playing", value=status["stream"]["game"])
+                embed.set_thumbnail(url=status["stream"]["channel"]["logo"])
                 await ctx.send(embed=embed)
 
     @commands.command()
@@ -98,10 +106,12 @@ class Stream(commands.Cog):
                 await ctx.send(embed=embed)
 
             else:
+                status = player.get_status()
                 ctx.voice_client.play(
                     player, after=lambda e: logging.error("Player error: %s" % e) if e else None
                 )
                 embed = discord.Embed(title="Now listening", description=channel)
+                embed.set_thumbnail(url=status["stream"]["channel"]["logo"])
                 await ctx.send(embed=embed)
 
     @commands.command()
