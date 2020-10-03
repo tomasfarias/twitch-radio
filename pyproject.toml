@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "twitch-radio"
-version = "1.3.7"
+version = "1.3.8"
 description = "Discord bot that plays audio from a Twitch stream"
 authors = ["Tomás Farías <tomas@tomasfarias.dev>"]
 packages = [

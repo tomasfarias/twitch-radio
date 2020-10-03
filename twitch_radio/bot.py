@@ -137,11 +137,21 @@ class Stream(commands.Cog):
     async def ensure_voice(self, ctx):
         if ctx.voice_client is None:
             if ctx.author.voice:
+
+                permissions = ctx.author.voice.permissions_for(ctx.me)
+                if permissions.connect is False:
+                    embed = discord.Embed(
+                        f"Error: I am not allowed to connect to {ctx.author.voice.channefl.name}"
+                    )
+                    await ctx.send(embed=embed)
+                    raise commands.CommandError("Bot does not have permissions to connect to voice channel")
+
                 await ctx.author.voice.channel.connect()
             else:
                 embed = discord.Embed("Error: you are not connected to a voice channel")
                 await ctx.send(embed=embed)
                 raise commands.CommandError("Author not connected to a voice channel.")
+
         elif ctx.voice_client.is_playing():
             ctx.voice_client.stop()
 
