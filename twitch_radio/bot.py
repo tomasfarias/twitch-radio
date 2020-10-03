@@ -138,7 +138,7 @@ class Stream(commands.Cog):
         if ctx.voice_client is None:
             if ctx.author.voice:
 
-                permissions = ctx.author.voice.permissions_for(ctx.me)
+                permissions = ctx.author.voice.channel.permissions_for(ctx.me)
                 if permissions.connect is False:
                     embed = discord.Embed(
                         f"Error: I am not allowed to connect to {ctx.author.voice.channefl.name}"
